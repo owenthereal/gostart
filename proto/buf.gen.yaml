@@ -1,0 +1,25 @@
+version: v1
+plugins:
+  - name: go
+    out: gen
+    opt:
+      - paths=source_relative
+  - name: go-grpc
+    out: gen
+    opt:
+      - paths=source_relative
+  - name: grpc-gateway
+    out: gen
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=false
+  - name: openapiv2
+    out: gen
+    opt:
+      - json_names_for_fields=false
+      - generate_unbound_methods=false
+  - name: validate
+    out: gen
+    opt:
+      - paths=source_relative
+      - lang=go

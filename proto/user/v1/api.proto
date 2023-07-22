@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "validate/validate.proto";
+
+option go_package = "github.com/owenthereal/gostart/proto/gen/user/v1";
+
+message User {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+  string username = 2 [(validate.rules).string.min_len = 1];
+  string email = 3 [(validate.rules).string.email = true];
+}
+
+service UserService {
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {}
+}
+
+message CreateUserRequest {
+  User user = 1;
+}
+
+message CreateUserResponse {
+  bool success = 1;
+}
