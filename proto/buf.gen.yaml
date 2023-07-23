@@ -8,6 +8,9 @@ plugins:
     out: gen
     opt:
       - paths=source_relative
+  - plugin: connect-go
+    out: gen
+    opt: paths=source_relative
   - name: grpc-gateway
     out: gen
     opt:

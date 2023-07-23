@@ -6,20 +6,35 @@ import "validate/validate.proto";
 
 option go_package = "github.com/owenthereal/gostart/proto/gen/user/v1";
 
+message NewUser {
+  string email = 1 [(validate.rules).string.email = true];
+}
+
 message User {
   int64 id = 1 [(validate.rules).int64.gt = 0];
-  string username = 2 [(validate.rules).string.min_len = 1];
-  string email = 3 [(validate.rules).string.email = true];
+  string email = 2 [(validate.rules).string.email = true];
 }
 
 service UserService {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {}
+  rpc ListUsers (ListUsersRequest) returns (ListUsersResponse) {
+    //option idempotency_level = NO_SIDE_EFFECTS;
+  }
 }
 
 message CreateUserRequest {
-  User user = 1;
+  NewUser user = 1 [(validate.rules).message.required = true];
 }
 
 message CreateUserResponse {
-  bool success = 1;
+  User user = 1;
+}
+
+message ListUsersRequest {
+  optional int64 limit = 1 [(validate.rules).int64.gt = 0];
+  repeated string emails = 2 [(validate.rules).repeated.items.string.email = true];
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
 }

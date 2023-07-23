@@ -48,8 +48,28 @@
     "v1CreateUserResponse": {
       "type": "object",
       "properties": {
-        "success": {
-          "type": "boolean"
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1ListUsersResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1User"
+          }
+        }
+      }
+    },
+    "v1NewUser": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
         }
       }
     },
@@ -59,9 +79,6 @@
         "id": {
           "type": "string",
           "format": "int64"
-        },
-        "username": {
-          "type": "string"
         },
         "email": {
           "type": "string"
