@@ -8,6 +8,7 @@ import (
 	"os"
 
 	middleware "github.com/deepmap/oapi-codegen/pkg/chi-middleware"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/go-chi/chi/v5"
 	"github.com/owenthereal/gostart/oapi"
 )
@@ -29,7 +30,15 @@ func main() {
 	userService := oapi.NewUserService()
 
 	r := chi.NewRouter()
-	r.Use(middleware.OapiRequestValidator(swagger))
+	r.Use(middleware.OapiRequestValidatorWithOptions(
+		swagger,
+		&middleware.Options{
+			Options: openapi3filter.Options{
+				AuthenticationFunc: oapi.NewAuthenticator(),
+			},
+		},
+	))
+	// This is needed to override the default Content-Type header added by oapi
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")

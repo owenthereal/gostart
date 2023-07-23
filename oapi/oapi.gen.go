@@ -21,6 +21,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+const (
+	BasicAuthScopes = "basicAuth.Scopes"
+)
+
 // Error defines model for Error.
 type Error struct {
 	// Code Error code
@@ -723,6 +727,8 @@ func (siw *ServerInterfaceWrapper) FindUsers(w http.ResponseWriter, r *http.Requ
 
 	var err error
 
+	ctx = context.WithValue(ctx, BasicAuthScopes, []string{})
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params FindUsersParams
 
@@ -757,6 +763,8 @@ func (siw *ServerInterfaceWrapper) FindUsers(w http.ResponseWriter, r *http.Requ
 func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	ctx = context.WithValue(ctx, BasicAuthScopes, []string{})
+
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateUser(w, r)
 	})
@@ -783,6 +791,8 @@ func (siw *ServerInterfaceWrapper) DeleteUser(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	ctx = context.WithValue(ctx, BasicAuthScopes, []string{})
+
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteUser(w, r, id)
 	})
@@ -808,6 +818,8 @@ func (siw *ServerInterfaceWrapper) GetUserById(w http.ResponseWriter, r *http.Re
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
 		return
 	}
+
+	ctx = context.WithValue(ctx, BasicAuthScopes, []string{})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetUserById(w, r, id)
@@ -952,19 +964,20 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8xWwW7jNhD9FWLao2Apu0Gx0Kndul34UuwlpyAHWhzZLERSIYdJBEP/XgwpO3Yspw2Q",
-	"LnIyRQ5n3sx7M/QOGmd6Z9FSgHoHodmikWn5h/fO86L3rkdPGtN24xTyr8LQeN2TdhbqbCzSWQGt80YS",
-	"1KAtff4EBdDQY/7EDXoYCzAYgtxcdLQ/PlwN5LXdwDgW4PE+ao8K6luYAu7N78YC/sLHm4AzwNFI3fHi",
-	"dZfZjD29zU0BWvH2cfK/XM8k/yKeVlAcgvKhtq3LhbYkGzqKCe5X94jWxUXjDEc8Ld33uO50I5RrokFL",
-	"krdF67yIAb347fuKwWjqGM3N89YD+pAdXC2qRcV+XY9W9hpq+LyoFldQQC9pm9Iv2VlabTBh49qkUCsF",
-	"NfyprbpJFnzHS4OUzG9f8pxSCoKcaHVH6MV6AM4dariP6PnDSoMHSygmbXJMTWjCLAfThvReDvwdaEj5",
-	"MiswFi9RGPmkTTTCRrNGL1wrPIbYUQLmkaK3F1B12mg6AfWvqh/vmPnQOxuylD5V1Z5otKmYsu873aRy",
-	"ln8HhribS/tnjy3U8FP53Lzl1LllUu1ZJcYztYTYNBhCGztxoJDvXWdQp8ZrqQSLFgNlm+tzmyQMYR2J",
-	"1kWrsj5bGTt6U5Kv5ZZH0kwy0eJTjw2hEjjZFBCiMdIPkyqFTH3AsHoXZqT7u0dJmMqXOxQDfXVqeDf0",
-	"+8k0gz+1IznRJAxwPCHIRxzPhHP1bqguQbqkj4/CaabrwOpYTKOp3Gk1ZnV2SDMvTN4PQoqg7abDPB7X",
-	"MqASzgraolgtRYicEfJwPpXJMl2fZPLqiFsteaDEidoJzjRNeJ4+D5P0BpxSfmmyzD8p55PlQoNOMD5U",
-	"dy4PhGQmBrFaMr7ZB+YbEtf+67BS/73+P6zq1f/elmlS7KN+JBa/IR0xqFV2EdA/7NmJnv/DbIn6uiw7",
-	"18hu6wLVX6ovFYx34z8BAAD//xQfwyKLCgAA",
+	"H4sIAAAAAAAC/8xW34/bNgz+VwRuj0biaw9D4ae1y1bkZSgw3NPhHhSJTjRYkitRbY2D//eBkvPr4txW",
+	"4FbcU2yGIj/y+0j5EZS3vXfoKELzCFHt0Mr8+HsIPvBDH3yPgQxms/Ia+VdjVMH0ZLyDpjiL/F8FrQ9W",
+	"EjRgHL19AxXQ0GN5xS0GGCuwGKPcXg20//twNFIwbgvjWEHAz8kE1NDcw5Rw7/4wVvAnfr2LOAMcrTQd",
+	"PzwfsrhxpO8LU4HRbD4t/pfbmeKf5DMaqkPSsYKIKgVDw1/MREm5kdGo94l2B4Y4YLYe4++Iehg5gnGt",
+	"L0w5kopOQIP/1X9F59NCecuQz3v/KW06o4T2Kll0JNksWh9EihjE+09rzmao43R3R9MXDLEEuFnUi5rj",
+	"+h6d7A008HZRL26ggl7SLhez5GD5aYsZGzc3p1praOAP4/Rd9uAzQVqk7H7/VCi5pCjIi9Z0hEFsBuDa",
+	"oYHPCQO/OJkbVTyhmsTNOQ2hjbMkTgYZghz4PdKQ62VaYayeorDym7HJCpfsBoPwrQgYU0cZWEBKwV1B",
+	"1Rlr6AzUv47N+MDSib13sQjjTV3viUaXmyn7vjMqt3P5d2SIj3Nl/xywhQZ+Wh6nfzmN/jLL/qIT44Va",
+	"YlIKY2xTJw4U8rnbAurceSO1YNVjpOJze+mThSGcJ9H65HTRZytTR99V5HO1lZ02U0xy+K1HRagFTj4V",
+	"xGStDMOkSiHzHDCs3scZ6f4WUBLm9pURx0gfvB5eDP1+tc3gz+NIXqiMAU5XDIWE44Vwbl4M1TVI1/Tx",
+	"WjgtdB1YHatpNS0fjR6LOjukmSuq2KOQIhq37bCsx42MqIV3gnYo1isRE1eEvN3PZbLKxyeZPLvi1ite",
+	"KGmidoIzbRPep8dlki+Rc8qvbZb5O+lys1wZ0AnGq5rO1YGQwsQg1ivGN3vBfETi3n8Y1vq/9/+Hdb3+",
+	"38cyb4p91tfE4kekEwaNLiH2n0OZnpMPofsH7l7E8GXPXQrd9BnULJedV7Lb+UjNu/pdDePD+E8AAAD/",
+	"/7pUodbqCgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -149,3 +149,9 @@ components:
         message:
           type: string
           description: Error message
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+security:
+  - basicAuth: []

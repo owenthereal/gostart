@@ -3,12 +3,19 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 
 	"github.com/owenthereal/gostart/oapi"
 )
 
 func main() {
-	c, err := oapi.NewClientWithResponses("http://localhost:8080")
+	c, err := oapi.NewClientWithResponses(
+		"http://localhost:8080",
+		oapi.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			req.SetBasicAuth("user", "pass")
+			return nil
+		}),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
