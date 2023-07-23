@@ -4,6 +4,9 @@ package proto
 
 import (
 	"context"
+	"encoding/base64"
+	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/bufbuild/connect-go"
@@ -11,24 +14,22 @@ import (
 	"github.com/owenthereal/gostart/proto/gen/user/v1/v1connect"
 )
 
-var _ v1connect.UserServiceHandler = (*UserService)(nil)
+var _ v1connect.UserServiceHandler = (*ConnectUserService)(nil)
 
-func NewUserService() *UserService {
-	return &UserService{
+func NewConnectUserService() *ConnectUserService {
+	return &ConnectUserService{
 		Users:  make(map[int64]*userv1.User),
 		NextId: 1000,
 	}
 }
 
-type UserService struct {
-	userv1.UnimplementedUserServiceServer
-
+type ConnectUserService struct {
 	Users  map[int64]*userv1.User
 	NextId int64
 	Lock   sync.Mutex
 }
 
-func (s *UserService) CreateUser(ctx context.Context, req *connect.Request[userv1.CreateUserRequest]) (*connect.Response[userv1.CreateUserResponse], error) {
+func (s *ConnectUserService) CreateUser(ctx context.Context, req *connect.Request[userv1.CreateUserRequest]) (*connect.Response[userv1.CreateUserResponse], error) {
 	if err := req.Msg.ValidateAll(); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -50,7 +51,7 @@ func (s *UserService) CreateUser(ctx context.Context, req *connect.Request[userv
 	}), nil
 }
 
-func (s *UserService) ListUsers(ctx context.Context, req *connect.Request[userv1.ListUsersRequest]) (*connect.Response[userv1.ListUsersResponse], error) {
+func (s *ConnectUserService) ListUsers(ctx context.Context, req *connect.Request[userv1.ListUsersRequest]) (*connect.Response[userv1.ListUsersResponse], error) {
 	if err := req.Msg.ValidateAll(); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -81,4 +82,32 @@ func (s *UserService) ListUsers(ctx context.Context, req *connect.Request[userv1
 	return connect.NewResponse(&userv1.ListUsersResponse{
 		Users: result,
 	}), nil
+}
+
+const authHeader = "Authentication"
+
+func NewAuthInterceptor() connect.UnaryInterceptorFunc {
+	interceptor := func(next connect.UnaryFunc) connect.UnaryFunc {
+		return connect.UnaryFunc(func(
+			ctx context.Context,
+			req connect.AnyRequest,
+		) (connect.AnyResponse, error) {
+			if req.Spec().IsClient {
+				req.Header().Set(authHeader, fmt.Sprintf("Basic: "+base64.StdEncoding.EncodeToString([]byte("user:pass"))))
+				return next(ctx, req)
+			}
+
+			auth := req.Header().Get(authHeader)
+			if auth == "" {
+				return nil, connect.NewError(
+					connect.CodeUnauthenticated,
+					errors.New("no basic auth provided"),
+				)
+			}
+
+			return next(ctx, req)
+		})
+	}
+
+	return connect.UnaryInterceptorFunc(interceptor)
 }

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package user.v1;
 
+import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 option go_package = "github.com/owenthereal/gostart/proto/gen/user/v1";
@@ -16,9 +17,15 @@ message User {
 }
 
 service UserService {
-  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {}
-  rpc ListUsers (ListUsersRequest) returns (ListUsersResponse) {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post: "/users"
+      body: "*"
+    };
+  }
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
     //option idempotency_level = NO_SIDE_EFFECTS;
+    option (google.api.http) = {get: "/users"};
   }
 }
 

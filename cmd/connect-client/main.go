@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/owenthereal/gostart/proto"
 	userv1 "github.com/owenthereal/gostart/proto/gen/user/v1"
 	"github.com/owenthereal/gostart/proto/gen/user/v1/v1connect"
 
@@ -15,6 +16,7 @@ func main() {
 	client := v1connect.NewUserServiceClient(
 		http.DefaultClient,
 		"http://localhost:8080",
+		connect.WithInterceptors(proto.NewAuthInterceptor()),
 	)
 	res, err := client.CreateUser(
 		context.Background(),
