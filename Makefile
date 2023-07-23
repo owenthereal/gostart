@@ -8,6 +8,10 @@ tools:
 	# go tools
 	GOBIN=$(TOOLS_DIR) go generate -tags tools tools.go
 
+.PHONY: build
+build: gen
+	go build -o bin/ ./cmd/...
+
 .PHONY: gen
 gen:
 	go generate ./...

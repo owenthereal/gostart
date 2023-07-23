@@ -1,4 +1,4 @@
-package: api
+package: oapi
 generate:
   chi-server: true
   models: true
@@ -6,4 +6,4 @@ generate:
   embedded-spec: true
 compatibility:
   apply-chi-middleware-first-to-last: true
-output: api.gen.go
+output: oapi.gen.go
