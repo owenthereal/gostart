@@ -3,18 +3,20 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 
+	"github.com/deepmap/oapi-codegen/pkg/securityprovider"
 	"github.com/owenthereal/gostart/oapi"
 )
 
 func main() {
+	basicAuthProvider, err := securityprovider.NewSecurityProviderBasicAuth("user", "pass")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	c, err := oapi.NewClientWithResponses(
 		"http://localhost:8080",
-		oapi.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			req.SetBasicAuth("user", "pass")
-			return nil
-		}),
+		oapi.WithRequestEditorFn(basicAuthProvider.Intercept),
 	)
 	if err != nil {
 		log.Fatal(err)

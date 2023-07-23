@@ -29,7 +29,7 @@ type UserService struct {
 func (s *UserService) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var newUser NewUser
 	if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
-		sendError(w, http.StatusBadRequest, "Invalid format for NewUser")
+		renderError(w, r, http.StatusBadRequest, "Invalid format for NewUser")
 		return
 	}
 
@@ -81,7 +81,7 @@ func (s *UserService) DeleteUser(w http.ResponseWriter, r *http.Request, id int6
 
 	_, found := s.Users[id]
 	if !found {
-		sendError(w, http.StatusNotFound, fmt.Sprintf("Could not find user with ID %d", id))
+		renderError(w, r, http.StatusNotFound, fmt.Sprintf("Could not find user with ID %d", id))
 		return
 	}
 	delete(s.Users, id)
@@ -95,7 +95,7 @@ func (s *UserService) GetUserById(w http.ResponseWriter, r *http.Request, id int
 
 	user, found := s.Users[id]
 	if !found {
-		sendError(w, http.StatusNotFound, fmt.Sprintf("Could not find user with ID %d", id))
+		renderError(w, r, http.StatusNotFound, fmt.Sprintf("Could not find user with ID %d", id))
 		return
 	}
 
@@ -103,12 +103,11 @@ func (s *UserService) GetUserById(w http.ResponseWriter, r *http.Request, id int
 	render.JSON(w, r, user)
 }
 
-func sendError(w http.ResponseWriter, code int, message string) {
+func renderError(w http.ResponseWriter, r *http.Request, code int, message string) {
 	petErr := Error{
 		Code:    int32(code),
 		Message: message,
 	}
 	w.WriteHeader(code)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(petErr)
+	render.JSON(w, r, petErr)
 }
