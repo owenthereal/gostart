@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"sync"
 
+	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/go-chi/render"
 )
 
@@ -55,7 +56,7 @@ func (s *UserService) FindUsers(w http.ResponseWriter, r *http.Request, params F
 	for _, user := range s.Users {
 		if params.Emails != nil {
 			for _, t := range *params.Emails {
-				if user.Email == t {
+				if user.Email == openapi_types.Email(t) {
 					result = append(result, user)
 				}
 			}

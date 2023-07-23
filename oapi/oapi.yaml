@@ -127,6 +127,7 @@ components:
       properties:
         email:
           type: string
+          format: email
     User:
       required:
         - id
@@ -137,6 +138,7 @@ components:
           format: int64
         email:
           type: string
+          format: email
     Error:
       required:
         - code
