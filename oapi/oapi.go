@@ -10,21 +10,20 @@ import (
 
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 )
 
 var _ ServerInterface = (*UserService)(nil)
 
 func NewUserService() *UserService {
 	return &UserService{
-		Users:  make(map[int64]User),
-		NextId: 1000,
+		Users: make(map[uuid.UUID]User),
 	}
 }
 
 type UserService struct {
-	Users  map[int64]User
-	NextId int64
-	Lock   sync.Mutex
+	Users map[uuid.UUID]User
+	Lock  sync.Mutex
 }
 
 func (s *UserService) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -39,8 +38,7 @@ func (s *UserService) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	user.Email = newUser.Email // TODO: check for uniqueness
-	user.Id = s.NextId
-	s.NextId = s.NextId + 1
+	user.Id = uuid.New()
 
 	s.Users[user.Id] = user
 
@@ -76,7 +74,7 @@ func (s *UserService) FindUsers(w http.ResponseWriter, r *http.Request, params F
 	render.JSON(w, r, result)
 }
 
-func (s *UserService) DeleteUser(w http.ResponseWriter, r *http.Request, id int64) {
+func (s *UserService) DeleteUser(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
 
@@ -90,7 +88,7 @@ func (s *UserService) DeleteUser(w http.ResponseWriter, r *http.Request, id int6
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (s *UserService) GetUserById(w http.ResponseWriter, r *http.Request, id int64) {
+func (s *UserService) GetUserById(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
 

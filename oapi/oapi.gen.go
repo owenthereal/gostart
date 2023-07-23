@@ -20,6 +20,7 @@ import (
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 const (
@@ -43,7 +44,7 @@ type NewUser struct {
 // User defines model for User.
 type User struct {
 	Email openapi_types.Email `json:"email"`
-	Id    int64               `json:"id"`
+	Id    uuid.UUID           `json:"id"`
 }
 
 // FindUsersParams defines parameters for FindUsers.
@@ -140,10 +141,10 @@ type ClientInterface interface {
 	CreateUser(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
-	DeleteUser(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteUser(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUserById request
-	GetUserById(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetUserById(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) FindUsers(ctx context.Context, params *FindUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -182,8 +183,8 @@ func (c *Client) CreateUser(ctx context.Context, body CreateUserJSONRequestBody,
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteUser(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteUserRequest(c.Server, id)
+func (c *Client) DeleteUser(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteUserRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +195,8 @@ func (c *Client) DeleteUser(ctx context.Context, id int64, reqEditors ...Request
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetUserById(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetUserByIdRequest(c.Server, id)
+func (c *Client) GetUserById(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserByIdRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -312,12 +313,12 @@ func NewCreateUserRequestWithBody(server string, contentType string, body io.Rea
 }
 
 // NewDeleteUserRequest generates requests for DeleteUser
-func NewDeleteUserRequest(server string, id int64) (*http.Request, error) {
+func NewDeleteUserRequest(server string, uuid openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "uuid", runtime.ParamLocationPath, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -346,12 +347,12 @@ func NewDeleteUserRequest(server string, id int64) (*http.Request, error) {
 }
 
 // NewGetUserByIdRequest generates requests for GetUserById
-func NewGetUserByIdRequest(server string, id int64) (*http.Request, error) {
+func NewGetUserByIdRequest(server string, uuid openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "uuid", runtime.ParamLocationPath, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -431,10 +432,10 @@ type ClientWithResponsesInterface interface {
 	CreateUserWithResponse(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
 
 	// DeleteUser request
-	DeleteUserWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+	DeleteUserWithResponse(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// GetUserById request
-	GetUserByIdWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*GetUserByIdResponse, error)
+	GetUserByIdWithResponse(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetUserByIdResponse, error)
 }
 
 type FindUsersResponse struct {
@@ -555,8 +556,8 @@ func (c *ClientWithResponses) CreateUserWithResponse(ctx context.Context, body C
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
-func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
-	rsp, err := c.DeleteUser(ctx, id, reqEditors...)
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+	rsp, err := c.DeleteUser(ctx, uuid, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -564,8 +565,8 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id int
 }
 
 // GetUserByIdWithResponse request returning *GetUserByIdResponse
-func (c *ClientWithResponses) GetUserByIdWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*GetUserByIdResponse, error) {
-	rsp, err := c.GetUserById(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetUserByIdWithResponse(ctx context.Context, uuid openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetUserByIdResponse, error) {
+	rsp, err := c.GetUserById(ctx, uuid, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -706,11 +707,11 @@ type ServerInterface interface {
 	// (POST /users)
 	CreateUser(w http.ResponseWriter, r *http.Request)
 	// Deletes a user by ID
-	// (DELETE /users/{id})
-	DeleteUser(w http.ResponseWriter, r *http.Request, id int64)
+	// (DELETE /users/{uuid})
+	DeleteUser(w http.ResponseWriter, r *http.Request, uuid openapi_types.UUID)
 	// Get a user by id
-	// (GET /users/{id})
-	GetUserById(w http.ResponseWriter, r *http.Request, id int64)
+	// (GET /users/{uuid})
+	GetUserById(w http.ResponseWriter, r *http.Request, uuid openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -783,19 +784,19 @@ func (siw *ServerInterfaceWrapper) DeleteUser(w http.ResponseWriter, r *http.Req
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int64
+	// ------------- Path parameter "uuid" -------------
+	var uuid openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "uuid", runtime.ParamLocationPath, chi.URLParam(r, "uuid"), &uuid)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "uuid", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, BasicAuthScopes, []string{})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteUser(w, r, id)
+		siw.Handler.DeleteUser(w, r, uuid)
 	})
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -811,19 +812,19 @@ func (siw *ServerInterfaceWrapper) GetUserById(w http.ResponseWriter, r *http.Re
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int64
+	// ------------- Path parameter "uuid" -------------
+	var uuid openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "uuid", runtime.ParamLocationPath, chi.URLParam(r, "uuid"), &uuid)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "uuid", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, BasicAuthScopes, []string{})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetUserById(w, r, id)
+		siw.Handler.GetUserById(w, r, uuid)
 	})
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -953,10 +954,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/users", wrapper.CreateUser)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/users/{id}", wrapper.DeleteUser)
+		r.Delete(options.BaseURL+"/users/{uuid}", wrapper.DeleteUser)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/users/{id}", wrapper.GetUserById)
+		r.Get(options.BaseURL+"/users/{uuid}", wrapper.GetUserById)
 	})
 
 	return r
@@ -965,20 +966,20 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8xWwY7bNhD9FWLao2Bpk0UR6NSkbgNfigDFnhZ7oMmRzUIkFXKYRFjo34shZa+9lpMW",
-	"TYs9WaKHwzfz3jzqEZS3g3foKEL7CFHt0cr8+GsIPvDDEPyAgQzmZeU18q/GqIIZyHgHbQkW+b8KOh+s",
-	"JGjBOHr9CiqgccDyijsMMFVgMUa5u5ro8Pdxa6Rg3A6mqYKAH5MJqKG9h/nAQ/jDVMHv+Pku4gJwtNL0",
-	"/HCEV1a+dUaJ4tT/Mm8FRp/FGUc/3S605xkAo6E6opgqiKhSMDT+wVwVDFsZjXqbaH/kkBPm1af8e6IB",
-	"Js5gXOcLl46kopMqwP/sP6PzaaW8Zcjn7HxI294oob1KFh1JXhadDyJFDOLthw2fZqjn4+6elj5hiCXB",
-	"zapZNZzXD+jkYKCF16tmdQMVDJL2uZiak+WnHWZs3O181EZDC78Zp+9yBO8J0iLl8PvnUsolRUFedKYn",
-	"DGI7AtcOLXxMGPjFydyoEgnVLH8+0xDajOGCxHlBhiBHfo805nqZVpiq5yis/GJsssIlu8UgfCcCxtRT",
-	"BhaQUnBXUPXGGjoD9c3Bmh5YOnHwLhZhvGqaA9HocjPlMPRG5XbWf0aG+LhU9o8BO2jhh/rJH+rZHOo8",
-	"BxedmC7UEpNSGGOXenGkkPfdFlDnwVupBaseI5WY28uYLAzhPInOJ6eLPjuZevpHRX6ttuJ6C8Ukh18G",
-	"VIRa4BxTQUzWyjDOqhQyzwHDGnxckO4vASVhbl8ZcYz0zuvxu6E/mN8C/jyO5IXKGODUYigknC6Ec/Pd",
-	"UF2DdE0fL4XTQteR1amaral+NHoq6uyRFi6xsh6FFNG4XY/FHrcyohbeCdqj2KxFTFwRsrufy2Sdt88y",
-	"+arFbdZsKGmmdoYzuwn76ZOZ5EvknPJrzrJ8J106y5UBnWG8qOlcHwkpTIxis2Z8ixfMeyTu/btxo/9+",
-	"//+3rjf/+Vhmpzic+pJYfI90wqDRJcXhcyjTc/IhdP/A3YsYPh24S6GfP4Pauu69kv3eR2rfNG8amB6m",
-	"vwIAAP//UFi6KwwLAAA=",
+	"H4sIAAAAAAAC/8xWTY/bNhD9K8S0R63lTXIIdGpSt4EvRYDCp8UeaGoksxBJhRwmKyz034shae/6K2nR",
+	"NNiT5dFw5s28mUc9gnJmdBYtBWgeIagdGpkef/PeeX4YvRvRk8ZkVq5F/m0xKK9H0s5Ck51FeldB57yR",
+	"BA1oS69fQQU0jZj/Yo8e5goMhiD7q4H2rw9HA3lte5jnCjx+itpjC80dlIR79/u5gj/wyybgBeBopB74",
+	"4QAvW76VI3tx6P8YtwLdst/DTe9uyrsYdbvYbNYrqJ7sN9qMzlNKJWkHDfSadnG7UM7UvXP9gDUfhPkU",
+	"q26hOgCeKwiootc0/cm0ZrhbGbR6FzlsoZtxJOsT5B3RmKNr27lMuyWp6FnB4H5xX9C6yLC4umMiP8bt",
+	"oJVonYoGLUk2i855EQN68e7jmrNpGjjd5sn0GX3IAW4Xy8WS47oRrRw1NPB6sVzcQpW6koqpOVh66jFh",
+	"Y2JSqnULDfyubbtJHnzGS4OU3O9Opy6VFAQ50emB0IvtBFw7NPApouc/VqZGZU+oyqZwTk1oEoYzvotB",
+	"ei8n/h9oSvXypMBcnaIw8kGbaISNZoteuE54DHGgBMwjRW+voBq00XQE6ps7ON/z6ITR2ZAH49VyuSca",
+	"bWqmHMdBq9TO+q/AEB8vlf2zxw4a+Kl+kpK66EidVuasE/PZtISoFIbQxUEcKORzbzKoY+etbAVPPQbK",
+	"Pm/OfdJgCOtIdC7aNs9nJ+NA/6rIr9WWBfJCMdHiw4iKsBVYfCoI0RjppzKVQqY9YFijCxdG91ePkjC1",
+	"L684Bnrv2um7od/r5AX8aR3JCZUwwHOJIR9xPhuc2++G6hqka/PxUjjNdB1YnasiTfUjC/Wc53NAunDj",
+	"ZXsQUgRt+wGzQG5lwFY4K2iHYr0SIXJNyPp+PCirdLwMyldFbr1iSYmF3AKn6Em6Zw5yki6XU9ovqkvx",
+	"PL1Bz7XlyooWGC9qP1cHQjITk1ivGN/FK+YDEvf+/bRu/3n/f1jXl//7Yiat2Gd9SSx+QHrG4P5jaf9B",
+	"lOh59il0d8/dC+g/77mLfigfQk1dD07JYecCNW+Xb5cw389/BwAA//8ixwc/OQsAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
